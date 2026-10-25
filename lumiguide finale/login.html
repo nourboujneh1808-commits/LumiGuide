@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Connexion | LumiGuide</title>
+<meta name="description" content="Connectez-vous à votre compte LumiGuide.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='28'%3E%E2%9C%A6%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip" href="#main">Aller au contenu</a>
+<div class="top">Livraison offerte dès 50 TND · Garantie 2 ans · Service client 7j/7</div>
+<header class="hd"><div class="wrap hdin">
+<a class="logo" href="index.html">LumiGuide <span>✦</span></a>
+<button class="burger" aria-label="Ouvrir le menu" aria-expanded="false">☰</button>
+<nav id="nav" aria-label="Menu principal"><a href="index.html">Accueil</a><a href="boutique.html">Boutique</a><a href="lumiguide-pro.html">LumiGuide Pro</a><a href="looks.html">Looks</a><a href="a-propos.html">À propos</a><a href="contact.html">Contact</a></nav>
+<a class="cart" href="panier.html" aria-label="Panier">🛍 <b id="cc">0</b></a>
+</div></header>
+<main id="main">
+<section class="ph"><div class="wrap"><p class="bc"><a href="index.html">Accueil</a> › Connexion</p><h1>Connexion</h1></div></section>
+<section class="sec"><div class="wrap narrow"><form class="panel" id="lf" novalidate>
+<label for="em">E-mail</label><input id="em" type="email" autocomplete="email" required>
+<label for="pw">Mot de passe</label><input id="pw" type="password" autocomplete="current-password" required>
+<button class="btn" type="submit" id="go">Se connecter</button>
+<p id="msg" role="status" hidden></p>
+<p class="mini">Pas encore de compte ? <a id="su" href="signup.html">Créer un compte</a>. La récupération de mot de passe n'est pas disponible dans cette version.</p>
+</form></div></section>
+</main>
+<footer class="ft"><div class="wrap fg">
+<div><div class="logo">LumiGuide <span>✦</span></div><p>Votre peau. Votre style. Tout dans un seul geste.</p><p>Appareil de beauté intelligent — Tunisie.</p></div>
+<div><h3>Pages</h3><a href="index.html">Accueil</a><a href="boutique.html">Boutique</a><a href="lumiguide-pro.html">LumiGuide Pro</a><a href="looks.html">Looks</a><a href="a-propos.html">À propos</a><a href="contact.html">Contact</a><a href="panier.html">Panier</a></div>
+<div><h3>Contact</h3><p>+216 70 000 000</p><p><a href="mailto:contact@lumiguide.tn">contact@lumiguide.tn</a></p><p>Tunis, Tunisie</p><p>Service client 7j/7</p></div>
+</div><p class="legal wrap">LumiGuide propose un conseil beauté. L'analyse de peau n'est pas un diagnostic médical. Site réalisé dans le cadre d'un projet pédagogique : paiement simulé, aucun débit.</p></footer>
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer src="supabase-client.js"></script>
+<script defer src="supabase-shop.js"></script>
+<script defer src="script.js"></script>
+<script>
+(()=>{
+const nextPage=()=>{const n=new URLSearchParams(location.search).get("next")||"";return /^[a-z0-9-]+\.html$/.test(n)?n:"compte.html"};
+const $m=(id,t,ok)=>{const e=document.getElementById(id);e.textContent=t;e.className=ok?"ok":"err";e.hidden=!t};
+document.addEventListener("DOMContentLoaded",()=>{
+ const n=new URLSearchParams(location.search).get("next");if(n)document.getElementById("su").href="signup.html?next="+encodeURIComponent(n);
+ if(location.hash.includes("access_token")||location.hash.includes("type=signup"))$m("msg","Si votre e-mail est confirmé, connectez-vous ci-dessus.",true);
+ LG.user().then(u=>{if(u)location.href=nextPage()});
+ document.getElementById("lf").onsubmit=async e=>{e.preventDefault();const b=document.getElementById("go");
+  const em=document.getElementById("em").value.trim(),pw=document.getElementById("pw").value;
+  if(!em||!pw||!document.getElementById("em").checkValidity()){$m("msg","Saisissez un e-mail valide et votre mot de passe.");return}
+  b.disabled=true;$m("msg","Connexion en cours…",true);
+  try{await LG.signIn(em,pw);location.href=nextPage()}catch(x){$m("msg",LG.msg(x))}finally{b.disabled=false}}});
+})();
+</script>
+</body></html>

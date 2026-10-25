@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Validation de la commande | LumiGuide</title>
+<meta name="description" content="Validez votre commande LumiGuide (paiement simulé).">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='28'%3E%E2%9C%A6%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip" href="#main">Aller au contenu</a>
+<div class="top">Livraison offerte dès 50 TND · Garantie 2 ans · Service client 7j/7</div>
+<header class="hd"><div class="wrap hdin">
+<a class="logo" href="index.html">LumiGuide <span>✦</span></a>
+<button class="burger" aria-label="Ouvrir le menu" aria-expanded="false">☰</button>
+<nav id="nav" aria-label="Menu principal"><a href="index.html">Accueil</a><a href="boutique.html">Boutique</a><a href="lumiguide-pro.html">LumiGuide Pro</a><a href="looks.html">Looks</a><a href="a-propos.html">À propos</a><a href="contact.html">Contact</a></nav>
+<a class="cart" href="panier.html" aria-label="Panier">🛍 <b id="cc">0</b></a>
+</div></header>
+<main id="main">
+<section class="ph"><div class="wrap"><p class="bc"><a href="index.html">Accueil</a> › <a href="panier.html">Panier</a> › Commande</p><h1>Validation de la commande</h1></div></section>
+<section class="sec"><div class="wrap two" style="align-items:start">
+<form class="panel" id="cf2" novalidate>
+<h2 class="h3" style="margin-top:0">Livraison</h2>
+<label for="nm">Nom complet</label><input id="nm" autocomplete="name" required>
+<label for="ph">Téléphone</label><input id="ph" type="tel" autocomplete="tel" required>
+<label for="ad">Adresse</label><input id="ad" autocomplete="street-address" required>
+<label for="ct">Ville</label><input id="ct" autocomplete="address-level2" required>
+<h2 class="h3">Paiement (simulation)</h2>
+<label><input type="radio" name="pay" value="livraison" checked style="width:auto"> Paiement à la livraison</label>
+<label><input type="radio" name="pay" value="carte_simulee" style="width:auto"> Carte (simulation : aucun débit, aucune donnée bancaire demandée)</label>
+<button class="btn" type="submit" id="go" style="width:100%">Confirmer la commande</button>
+<p id="msg" role="status" hidden></p></form>
+<div class="panel"><h2 class="h3" style="margin-top:0">Récapitulatif</h2><div id="rc">Chargement…</div></div>
+</div></section>
+</main>
+<footer class="ft"><div class="wrap fg">
+<div><div class="logo">LumiGuide <span>✦</span></div><p>Votre peau. Votre style. Tout dans un seul geste.</p><p>Appareil de beauté intelligent — Tunisie.</p></div>
+<div><h3>Pages</h3><a href="index.html">Accueil</a><a href="boutique.html">Boutique</a><a href="lumiguide-pro.html">LumiGuide Pro</a><a href="looks.html">Looks</a><a href="a-propos.html">À propos</a><a href="contact.html">Contact</a><a href="panier.html">Panier</a></div>
+<div><h3>Contact</h3><p>+216 70 000 000</p><p><a href="mailto:contact@lumiguide.tn">contact@lumiguide.tn</a></p><p>Tunis, Tunisie</p><p>Service client 7j/7</p></div>
+</div><p class="legal wrap">LumiGuide propose un conseil beauté. L'analyse de peau n'est pas un diagnostic médical. Site réalisé dans le cadre d'un projet pédagogique : paiement simulé, aucun débit.</p></footer>
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer src="supabase-client.js"></script>
+<script defer src="supabase-shop.js"></script>
+<script defer src="script.js"></script>
+<script>
+(()=>{
+const nextPage=()=>{const n=new URLSearchParams(location.search).get("next")||"";return /^[a-z0-9-]+\.html$/.test(n)?n:"compte.html"};
+const $m=(id,t,ok)=>{const e=document.getElementById(id);e.textContent=t;e.className=ok?"ok":"err";e.hidden=!t};
+let cart=[],total=0;
+const fee=s=>s>=LG.FREE_FROM_M?0:LG.SHIP_FEE_M;
+function recap(){cart=JSON.parse(localStorage.getItem("lg_cart")||"[]");let sub=0,bad=false;
+ const rows=cart.map(i=>{const p=D.P[i.id];if(!p||p.gone){bad=true;return`<li>${LG.esc(i.id)} : <b>plus disponible</b></li>`}
+  const l=Math.round(p.price*1000)*i.q;sub+=l;return`<li>${LG.esc(p.name)}${i.col?" ("+LG.esc(i.col)+")":""} × ${i.q} — ${LG.tnd(l)}</li>`}).join("");
+ total=sub+fee(sub);
+ document.getElementById("rc").innerHTML=cart.length?`<ul>${rows}</ul><p>Sous-total : ${LG.tnd(sub)}<br>Livraison : ${fee(sub)?LG.tnd(fee(sub)):"Offerte"}<br><b>Total : ${LG.tnd(total)}</b></p><a href="panier.html">Modifier le panier</a>`:`Votre panier est vide. <a href="boutique.html">Voir la boutique</a>`;
+ document.getElementById("go").disabled=!cart.length||bad;if(bad)$m("msg","Un produit n'est plus disponible : retirez-le dans le panier.")}
+function attempt(){const sig=localStorage.getItem("lg_cart")||"";let a;try{a=JSON.parse(localStorage.getItem("lg_attempt"))}catch(e){}
+ if(!a||a.sig!==sig){a={id:crypto.randomUUID(),sig};localStorage.setItem("lg_attempt",JSON.stringify(a))}return a.id}
+document.addEventListener("DOMContentLoaded",async()=>{
+ const u=await LG.requireLogin();if(!u)return;const m=u.user_metadata||{};
+ document.getElementById("nm").value=((m.first_name||"")+" "+(m.last_name||"")).trim();
+ await LG.loadCatalog();recap();
+ document.getElementById("cf2").onsubmit=async e=>{e.preventDefault();const b=document.getElementById("go"),g=i=>document.getElementById(i).value.trim();
+  if(g("nm").length<2||g("ph").length<8||g("ad").length<5||g("ct").length<2)return $m("msg","Remplissez toutes les coordonnées (téléphone : 8 chiffres minimum).");
+  await LG.loadCatalog();recap();if(b.disabled)return;
+  b.disabled=true;$m("msg","Enregistrement de la commande…",true);
+  try{const o=await LG.createOrder(attempt(),cart.map(i=>({id:i.id,col:i.col||"",q:i.q})),{name:g("nm"),phone:g("ph"),address:g("ad"),city:g("ct")},document.querySelector("input[name=pay]:checked").value,total);
+   localStorage.removeItem("lg_cart");localStorage.removeItem("lg_attempt");location.href="confirmation.html?ref="+encodeURIComponent(o.ref)}
+  catch(x){$m("msg",LG.msg(x));b.disabled=false;if(String(x.message).includes("PRICE_CHANGED"))recap()}}});
+})();
+</script>
+</body></html>

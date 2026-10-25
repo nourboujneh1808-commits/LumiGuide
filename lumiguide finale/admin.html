@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Administration | LumiGuide</title>
+<meta name="description" content="Gestion des commandes et des produits.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='28'%3E%E2%9C%A6%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip" href="#main">Aller au contenu</a>
+<div class="top">Livraison offerte dès 50 TND · Garantie 2 ans · Service client 7j/7</div>
+<header class="hd"><div class="wrap hdin">
+<a class="logo" href="index.html">LumiGuide <span>✦</span></a>
+<button class="burger" aria-label="Ouvrir le menu" aria-expanded="false">☰</button>
+<nav id="nav" aria-label="Menu principal"><a href="index.html">Accueil</a><a href="boutique.html">Boutique</a><a href="lumiguide-pro.html">LumiGuide Pro</a><a href="looks.html">Looks</a><a href="a-propos.html">À propos</a><a href="contact.html">Contact</a></nav>
+<a class="cart" href="panier.html" aria-label="Panier">🛍 <b id="cc">0</b></a>
+</div></header>
+<main id="main">
+<section class="ph"><div class="wrap"><p class="bc"><a href="index.html">Accueil</a> › Admin</p><h1>Administration</h1></div></section>
+<section class="sec"><div class="wrap" id="ad"><p role="status">Vérification de votre session…</p></div></section>
+</main>
+<footer class="ft"><div class="wrap fg">
+<div><div class="logo">LumiGuide <span>✦</span></div><p>Votre peau. Votre style. Tout dans un seul geste.</p><p>Appareil de beauté intelligent — Tunisie.</p></div>
+<div><h3>Pages</h3><a href="index.html">Accueil</a><a href="boutique.html">Boutique</a><a href="lumiguide-pro.html">LumiGuide Pro</a><a href="looks.html">Looks</a><a href="a-propos.html">À propos</a><a href="contact.html">Contact</a><a href="panier.html">Panier</a></div>
+<div><h3>Contact</h3><p>+216 70 000 000</p><p><a href="mailto:contact@lumiguide.tn">contact@lumiguide.tn</a></p><p>Tunis, Tunisie</p><p>Service client 7j/7</p></div>
+</div><p class="legal wrap">LumiGuide propose un conseil beauté. L'analyse de peau n'est pas un diagnostic médical. Site réalisé dans le cadre d'un projet pédagogique : paiement simulé, aucun débit.</p></footer>
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer src="supabase-client.js"></script>
+<script defer src="supabase-shop.js"></script>
+<script defer src="script.js"></script>
+<script>
+(()=>{
+
+const $=id=>document.getElementById(id);
+let skip=0,orders=new Map(),editing=false;
+function note(id,t,ok){const e=$(id);e.textContent=t;e.className=ok?"ok":"err";e.hidden=!t}
+async function loadOrders(more){
+ const st=$("flt").value;if(!more){skip=0;orders.clear();$("ol").innerHTML=""}
+ $("ostat").textContent="Chargement…";$("more").hidden=true;
+ try{const rows=await LG.adminOrders(st,skip,50);skip+=rows.length;
+  rows.forEach(o=>{orders.set(o.id,o);$("ol").insertAdjacentHTML("beforeend",orderRow(o))});
+  $("ostat").textContent=orders.size?"":"Aucune commande.";$("more").hidden=rows.length<50}
+ catch(x){$("ostat").textContent=LG.msg(x)}}
+function orderRow(o){const s=o.shipping||{};
+ return`<details data-id="${o.id}"><summary>${LG.esc(o.ref)} · ${LG.dateFr(o.created_at)} · ${LG.esc(s.name||"")} · ${LG.tnd(o.total_millimes)} · <b class="st">${LG.esc(LG.STATUTS[o.status])}</b></summary>${LG.orderHtml(o)}
+ <label for="s-${o.id}">Statut</label><select id="s-${o.id}">${Object.entries(LG.STATUTS).map(([k,v])=>`<option value="${k}"${k===o.status?" selected":""}>${v}</option>`).join("")}</select>
+ <button class="btn sv" type="button">Enregistrer le statut</button> <span class="sm" role="status"></span></details>`}
+document.addEventListener("click",async e=>{const b=e.target.closest(".sv");if(!b)return;
+ const d=b.closest("details"),o=orders.get(d.dataset.id),sm=d.querySelector(".sm");b.disabled=true;sm.textContent="Enregistrement…";
+ try{const n=await LG.adminSetStatus(o.id,d.querySelector("select").value,o.updated_at);orders.set(n.id,n);
+  d.querySelector(".st").textContent=LG.STATUTS[n.status];sm.textContent="Statut enregistré ✓"}
+ catch(x){sm.textContent=LG.msg(x)}finally{b.disabled=false}});
+async function loadProducts(){const l=$("pl");l.textContent="Chargement…";
+ try{const ps=await LG.adminProducts();window._ps=ps;
+  l.innerHTML=ps.length?ps.map(p=>`<div class="cl" style="grid-template-columns:1fr auto"><div><b>${LG.esc(p.name)}</b> <small>(${LG.esc(p.id)} · ${LG.esc(p.category)} · ${LG.tnd(p.price_millimes)}${p.available?"":" · masqué"})</small></div><div><button class="btn ghost" data-ed="${LG.esc(p.id)}" type="button">Modifier</button> <button class="btn ghost" data-del="${LG.esc(p.id)}" type="button">Supprimer</button></div></div>`).join(""):"Aucun produit."}
+ catch(x){l.textContent=LG.msg(x)}}
+function fill(p){editing=!!p;const set=(i,v)=>$(i).value=v;
+ set("p-id",p?p.id:"");$("p-id").readOnly=editing;set("p-name",p?p.name:"");set("p-cat",p?p.category:"Appareils");set("p-price",p?(p.price_millimes/1000).toFixed(3):"");
+ set("p-img",p?p.image:"images/");set("p-desc",p?p.description:"");set("p-feat",p?p.features.join("\n"):"");$("p-av").checked=p?p.available:true;
+ $("pt").textContent=p?"Modifier le produit":"Ajouter un produit";note("pmsg","")}
+document.addEventListener("click",async e=>{
+ const ed=e.target.closest("[data-ed]"),dl=e.target.closest("[data-del]");
+ if(ed){fill(window._ps.find(p=>p.id===ed.dataset.ed));$("pf").scrollIntoView()}
+ if(dl&&confirm("Supprimer définitivement ce produit ?")){try{await LG.adminDeleteProduct(dl.dataset.del);note("pmsg","Produit supprimé.",true);loadProducts()}catch(x){note("pmsg",LG.msg(x))}}});
+async function saveProduct(e){e.preventDefault();const b=$("psave"),v=i=>$(i).value.trim();
+ const price=Math.round(parseFloat(v("p-price").replace(",","."))*1000);
+ if(!/^[a-z0-9-]+$/.test(v("p-id")))return note("pmsg","Identifiant : lettres minuscules, chiffres et tirets uniquement.");
+ if(v("p-name").length<2)return note("pmsg","Indiquez le nom du produit.");
+ if(!(price>0))return note("pmsg","Le prix doit être supérieur à 0.");
+ if(!/^(https:\/\/|images\/)\S+$/.test(v("p-img")))return note("pmsg","L'image doit être un fichier du dossier images/ ou une URL https.");
+ b.disabled=true;note("pmsg","Enregistrement…",true);
+ try{await LG.adminSaveProduct({id:v("p-id"),name:v("p-name"),category:$("p-cat").value,price_millimes:price,image:v("p-img"),description:v("p-desc"),features:$("p-feat").value.split("\n").map(s=>s.trim()).filter(Boolean),available:$("p-av").checked},!editing);
+  note("pmsg","Produit enregistré ✓",true);fill(null);loadProducts()}
+ catch(x){note("pmsg",LG.msg(x))}finally{b.disabled=false}}
+document.addEventListener("DOMContentLoaded",async()=>{
+ const u=await LG.requireLogin();if(!u)return;const a=$("ad");
+ if(!await LG.isAdmin()){a.innerHTML='<div class="panel"><h2 class="h3" style="margin-top:0">Accès réservé</h2><p>Cette page est réservée à l\'administrateur de la boutique. Votre compte est un compte client.</p><a class="btn" href="compte.html">Mon compte</a></div>';return}
+ a.innerHTML=`<h2>Gestion des commandes</h2>
+ <div class="row" style="margin:0 0 16px"><select id="flt" aria-label="Filtrer par statut" style="width:auto"><option value="">Tous les statuts</option>${Object.entries(LG.STATUTS).map(([k,v])=>`<option value="${k}">${v}</option>`).join("")}</select><button class="btn ghost" id="rf" type="button">Actualiser</button></div>
+ <p id="ostat" role="status"></p><div id="ol"></div><div class="ctr"><button class="btn ghost" id="more" type="button" hidden>Chargement de la suite</button></div>
+ <h2 style="margin-top:48px">Produits</h2>
+ <form class="panel" id="pf" novalidate><h3 class="h3" style="margin-top:0" id="pt">Ajouter un produit</h3>
+ <label for="p-id">Identifiant</label><input id="p-id"><label for="p-name">Nom</label><input id="p-name">
+ <label for="p-cat">Catégorie</label><select id="p-cat"><option>Appareils</option><option>Packs</option><option>Soins</option><option>Accessoires</option></select>
+ <label for="p-price">Prix (TND, ex. 299.000)</label><input id="p-price" inputmode="decimal">
+ <label for="p-img">Image (fichier images/… ou URL https)</label><input id="p-img" value="images/">
+ <label for="p-desc">Description</label><textarea id="p-desc" rows="3"></textarea>
+ <label for="p-feat">Caractéristiques (une par ligne)</label><textarea id="p-feat" rows="3"></textarea>
+ <label><input type="checkbox" id="p-av" checked style="width:auto"> Visible dans la boutique</label>
+ <div class="row"><button class="btn" id="psave" type="submit">Enregistrer</button><button class="btn ghost" id="pnew" type="button">Nouveau produit</button></div><p id="pmsg" role="status" hidden></p></form>
+ <h3 class="h3">Produits enregistrés</h3><div id="pl"></div>`;
+ $("flt").onchange=()=>loadOrders(false);$("rf").onclick=()=>loadOrders(false);$("more").onclick=()=>loadOrders(true);
+ $("pf").onsubmit=saveProduct;$("pnew").onclick=()=>fill(null);
+ loadOrders(false);loadProducts()});
+})();
+</script>
+</body></html>

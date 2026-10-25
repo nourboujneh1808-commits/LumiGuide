@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /compte.html
+Disallow: /checkout.html
+Disallow: /confirmation.html
+Disallow: /login.html
+Disallow: /signup.html
+Disallow: /verification.html
+Sitemap: https://lumiguide.vercel.app/sitemap.xml

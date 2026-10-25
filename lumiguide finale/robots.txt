@@ -7,4 +7,4 @@ Disallow: /confirmation.html
 Disallow: /login.html
 Disallow: /signup.html
 Disallow: /verification.html
-Sitemap: https://lumiguide.vercel.app/sitemap.xml
+Sitemap: https://lumiguide-nour.vercel.app/sitemap.xml
